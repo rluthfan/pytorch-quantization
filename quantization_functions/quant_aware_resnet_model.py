@@ -79,7 +79,8 @@ class CBottleneckBlock(nn.Module):
         self.inplanes = inplanes
         self.outplanes = outplanes
         stride = outplanes*4 // inplanes
-        downsample = stride >= 2
+        if stride >=2: stride=2
+        downsample = stride == 2
         self.layer_name = layer_name
 
         state_dict_names1 = [layer_name + '.' + name for name in
