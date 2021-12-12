@@ -43,12 +43,6 @@ class QConvBnReLU(nn.Module):
         q_b.zero_point = torch.tensor(0)
         q_out = cbr.q_out
 
-        # self.fw, self.fb = weight, bias
-        # self.q_in = q_in
-        # self.q_w = q_w
-        # self.q_b = q_b
-        # self.q_out = q_out
-
         self.M = q_in.scale * q_w.scale / q_out.scale
         self.w_zero = q_w.zero_point
         self.x_zero = q_in.zero_point
