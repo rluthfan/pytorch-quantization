@@ -79,8 +79,9 @@ class CBottleneckBlock(nn.Module):
         self.inplanes = inplanes
         self.outplanes = outplanes
         stride = outplanes*4 // inplanes
-        if stride >=2: stride=2
-        downsample = stride == 2
+        downsample = stride >= 2
+        if stride >2: stride=1
+        
         self.layer_name = layer_name
 
         state_dict_names1 = [layer_name + '.' + name for name in
@@ -116,7 +117,7 @@ class CBottleneckBlock(nn.Module):
                                    'downsample.1.running_mean', 'downsample.1.running_var',
                                    'downsample.1.num_batches_tracked']]
             self.downsample = CConvBNReLU2d(
-                inplanes, outplanes*4, kernel_size=(1, 1), stride=(2, 2), bias=False,
+                inplanes, outplanes*4, kernel_size=(1, 1), stride=stride, bias=False,
                 q_num_bit=q_num_bit, affine=True, relu=False, state_dict_names=state_dict_names_d
             )
         else:

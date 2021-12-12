@@ -54,15 +54,16 @@ class QBottleneckBlock(nn.Module):
         self.inplanes = inplanes
         self.outplanes = outplanes
         stride = outplanes*4 // inplanes
-        if stride >=2: stride=2
-        downsample = stride == 2
+        downsample = stride >= 2
+        if stride >2: stride=1
+        
         self.conv1 = QConvBnReLU(inplanes, outplanes, (1, 1), relu=True, stride=stride, padding=0, dilation=1)
         self.conv2 = QConvBnReLU(outplanes, outplanes, (3, 3), relu=True, stride=(1, 1), padding=1, dilation=1)
         self.conv3 = QConvBnReLU(outplanes, outplanes*4, (1, 1), relu=False, stride=(1, 1), padding=0, dilation=1)
         self.act2 = QReLU()
         self.stride = stride
         if downsample:
-            self.downsample = QConvBnReLU(inplanes, outplanes*4, kernel_size=(1, 1), stride=(2, 2), relu=False)
+            self.downsample = QConvBnReLU(inplanes, outplanes*4, kernel_size=(1, 1), stride=stride, relu=False)
         else:
             self.downsample = None
         self.add = QAdd()
