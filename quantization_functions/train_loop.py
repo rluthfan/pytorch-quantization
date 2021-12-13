@@ -3,7 +3,12 @@ import torch.nn as nn
 import tqdm
 import os
 
-def train_model(train_dl, val_dl, model, optimizer, criterion, epochs=10, save='checkpoint/origin_training'):
+def train_model(
+    train_dl, val_dl, 
+    model, optimizer, criterion,
+    clip_value=1e-2,
+    epochs=10, save='checkpoint/origin_training'
+):
     
     model = model.cuda()
     min_loss = float('inf')
@@ -22,6 +27,7 @@ def train_model(train_dl, val_dl, model, optimizer, criterion, epochs=10, save='
             loss_mean.append(loss.item())
             train_loss = sum(loss_mean) / len(loss_mean)
             train_bar.set_postfix({'loss': train_loss})
+            nn.utils.clip_grad_value_(model.parameters(), 1e-2)
             optimizer.step()
             _step +=1
         train_loss = sum(loss_mean) / len(loss_mean)
