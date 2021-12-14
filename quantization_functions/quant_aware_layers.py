@@ -73,8 +73,8 @@ def fold_bn(conv_w, conv_b, mean, var, gamma, beta, eps=1e-5):
 
 
 class CConvBNReLU2d(nn.Module):
-    def __init__(self, in_channel, out_channel, kernel_size, stride=1, padding=0, bias=False, dilation=1
-                 , q_num_bit=8, start=False, affine=True, relu=False, state_dict_names=[]):
+    def __init__(self, in_channel, out_channel, kernel_size, stride=1, padding=0, bias=False, dilation=1,
+                 q_num_bit=8, start=False, affine=True, relu=False, state_dict_names=[], qat=False):
         super(CConvBNReLU2d, self).__init__()
 
         if type(kernel_size) == int:
@@ -100,6 +100,7 @@ class CConvBNReLU2d(nn.Module):
         self.relu = relu
         self.state_dict_names = state_dict_names
         self.start = start
+        self.qat = qat
 
     def forward(self, x):
         if not self.if_quantize_forward:
@@ -111,27 +112,33 @@ class CConvBNReLU2d(nn.Module):
         else:
             if self.start:
                 self.q_in.quantize_update(x)
-                x = FakeQuantize.apply(x, self.q_in)
+                if self.qat:
+                    x = FakeQuantize.apply(x, self.q_in)
 
             weight, bias = fold_bn(self.weight, self.bias, self.running_mean, self.running_var, self.bn_weight,
                                    self.bn_bias)
             if self.q_w:
                 self.q_w.quantize_update(weight)
-                weight = FakeQuantize.apply(weight, self.q_w)
+                if self.qat:
+                    weight = FakeQuantize.apply(weight, self.q_w)
+
             if self.bias:
                 self.q_b.scale = self.q_w.scale
                 self.q_b.zero_point = torch.tensor(0)
-                # self.q_b.quantize_update(bias)
-                bias = FakeQuantize.apply(bias, self.q_b)
+                if self.qat:
+                    bias = FakeQuantize.apply(bias, self.q_b)
 
             stride, padding, dilation = self.stride, self.padding, self.dilation
             x = F.conv2d(x, weight, bias, stride, padding, dilation)
 
             if self.q_out:
                 self.q_out.quantize_update(x)
-                x = FakeQuantize.apply(x, self.q_out)
+                if self.qat:
+                    x = FakeQuantize.apply(x, self.q_out)
+                
             if self.relu:
                 x = F.relu(x)
+            
             return x
 
     def load_pretrained(self, state_dict):
@@ -154,7 +161,7 @@ class CConvBNReLU2d(nn.Module):
 
 
 class CLinear(nn.Module):
-    def __init__(self, in_features, out_features, bias=True, q_num_bit=8, pretrained_name=""):
+    def __init__(self, in_features, out_features, bias=True, q_num_bit=8, pretrained_name="", qat=False):
         super(CLinear, self).__init__()
         self.weight = nn.Parameter(torch.randn(out_features, in_features), requires_grad=True)
         self.bias = nn.Parameter(torch.randn(out_features), requires_grad=True) if bias else None
@@ -167,27 +174,37 @@ class CLinear(nn.Module):
 
         self.pretrained_name = pretrained_name
         self.if_quantize_forward = False
+        self.qat = qat
 
     def forward(self, x):
         if not self.if_quantize_forward:
             y = F.linear(x, self.weight, self.bias)
             return y
+            
         else:
             self.q_w.quantize_update(self.weight)
-            weight = FakeQuantize.apply(self.weight, self.q_w)
+            if self.qat:
+                weight = FakeQuantize.apply(self.weight, self.q_w)
+            else:
+                weight = self.weight
 
             if self.bias is not None:
                 self.q_b.scale = self.q_w.scale
                 self.q_b.zero_point = torch.tensor(0)
-                # self.q_b.quantize_update(self.bias)
-                bias = FakeQuantize.apply(self.bias, self.q_b)
+                if self.qat:
+                    bias = FakeQuantize.apply(self.bias, self.q_b)
+                else:
+                    bias = self.bias
+
             else:
                 bias = None
 
             y = F.linear(x, weight, bias)
             if self.q_out:
                 self.q_out.quantize_update(y)
-                y = FakeQuantize.apply(y, self.q_out)
+                if self.qat:
+                    y = FakeQuantize.apply(y, self.q_out)
+                
             return y
 
     def quantize(self, if_quantize):
@@ -201,14 +218,14 @@ class CLinear(nn.Module):
             if data_name in state_dict and data.data.shape == state_dict[data_name].shape:
                 data.data = state_dict[data_name]
                 state_dict.pop(data_name)
-                # print(f'loaded {data_name}')
 
 
 class CAdd(nn.Module):
-    def __init__(self, q_num_bit=8):
+    def __init__(self, q_num_bit=8, qat=False):
         super(CAdd, self).__init__()
         self.q_out = QParam(q_num_bit)
         self.if_quantize_forward = False
+        self.qat = qat
 
     def forward(self, *xs):
         if not self.if_quantize_forward:
@@ -216,7 +233,9 @@ class CAdd(nn.Module):
         else:
             y = sum(xs)
             self.q_out.quantize_update(y)
-            y = FakeQuantize.apply(y, self.q_out)
+            if self.qat:
+                y = FakeQuantize.apply(y, self.q_out)
+
             return y
 
     def quantize(self, if_quantize):

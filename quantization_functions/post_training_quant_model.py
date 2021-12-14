@@ -155,5 +155,14 @@ class QResnet(nn.Module):
 def QResnet18(num_class):
     return QResnet(QBasicBlock, [2,2,2,2], num_class)
 
+def QResnet34(num_class):
+    return QResnet(QBasicBlock, [3,4,6,3], num_class)
+
 def QResnet50(num_class):
     return QResnet(QBottleneckBlock, [3,4,6,3], num_class)
+
+def QResnet101(num_class):
+    return QResnet(QBottleneckBlock, [3,4,23,3], num_class)
+
+def QResnet152(num_class):
+    return QResnet(QBottleneckBlock, [3,8,36,3], num_class)
