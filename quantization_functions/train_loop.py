@@ -58,3 +58,17 @@ def train_model(
                             f'train_loss:{train_loss}\n'
                             f'val_loss:{val_loss}\n'
                             f'acc:{val_acc}')
+
+def test_model(val_dl, model):
+    
+    model = model.cuda()
+    model.eval()
+
+    acc = []
+    bar = tqdm.tqdm(val_dl)
+    for x, label in bar:
+        x, label = x.cuda(), label.cuda()
+        y = model(x)
+        acc.extend((y.argmax(dim=1) == label).tolist())
+        bar.set_postfix({'acc':sum(acc) / len(acc)})
+    print('acc:', sum(acc) / len(acc))
