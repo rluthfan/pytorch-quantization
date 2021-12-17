@@ -1,7 +1,11 @@
-# pytorch-quantization
+# Pytorch Quantization Module
+Part of: [Front End Module](https://github.com/raudipra/front_end_quantization_project) and [Back End Quantization Project](https://github.com/raudipra/back_end_quantization_project).
+This repository contains Resnet Quantization implentation in Pytorch, and currently supports Post Training Quantization, and Quantization Aware Training.
 
 ## ONNX Runtime Serving
 
-After cloning the repo, in each different server run the command below, change the bit correspondingly
-- sudo docker pull mcr.microsoft.com/onnxruntime/server
-- sudo docker run -it -v $(pwd):$(pwd) -p 9001:8001 mcr.microsoft.com/onnxruntime/server --model_path $(pwd)/pytorch-quantization/checkpoint/resnet50_4bit.onnx
+- Clone the repo
+- Download the [ONNX model]() and keep it under `pytorch-quantization/checkpoint/onnx/imagenette/`
+- `sudo docker pull mcr.microsoft.com/onnxruntime/server`
+- `sudo docker run -it -v $(pwd):$(pwd) -p 9001:8001 mcr.microsoft.com/onnxruntime/server --model_path $(pwd)/pytorch-quantization/checkpoint/onnx/imagenette/resnet50_4bit.onnx`
+- You can choose the model by changing the `--model_path` argument above.
