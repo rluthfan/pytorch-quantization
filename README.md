@@ -12,7 +12,7 @@ This repository contains Resnet Quantization implentation in Pytorch, and curren
 
 ### Setup Server
 - Clone the repo
-- Download the [ONNX model]() and keep it under `pytorch-quantization/checkpoint/onnx/imagenette/`
+- Download the [ONNX models](https://drive.google.com/drive/folders/1-Mc2gVb5yMWstdlm-MKFF3sgPEoFIxne?usp=sharing) and keep it under `pytorch-quantization/checkpoint/onnx/imagenette/`
 
 ### Run Server
 - `sudo docker pull mcr.microsoft.com/onnxruntime/server`
