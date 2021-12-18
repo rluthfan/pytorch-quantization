@@ -27,7 +27,10 @@ This repository contains Resnet Quantization implentation in Pytorch, and curren
 ![solution_diagram](./figures/solution_diagram.png)
 
 ## Setup
-- `pip install -r requirements.txt`
+- Launch Deep Learning VM in Google Cloud Platform [Deploy VM Image](https://console.cloud.google.com/marketplace/product/click-to-deploy-images/deeplearning)
+    - The Hardware that we used in this project is NVIDIA Tesla V100 GPU with 8 vCPU 30gb RAM (n1-standard-8 GCP)
+- Install additional libraries
+    - `pip install -r requirements.txt`
 
 The code used for this project is contained in the following notebooks and python files:
 
