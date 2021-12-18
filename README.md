@@ -91,6 +91,12 @@ And lastly, we have the compiled analysis for comparing metrics & charts in:
 
 5. Analysis-of-results.ipynb
 
+## Results
+
+![imagenette_resnet18](./figures/effect_of_diff_bits/imagenette_resnet18.png)
+![imagenette_resnet50](./figures/effect_of_diff_bits/imagenette_resnet50.png)
+
+
 ## ONNX Runtime Serving
 
 ### Generate ONNX Model
